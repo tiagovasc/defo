@@ -18,7 +18,7 @@ const thornodeAmountUrl = 'https://thornode.ninerealms.com/bank/balances/thor1s6
 const thornodePriceUrl = 'https://midgard.ninerealms.com/v2/stats'
 
 const solanaAuth = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjExMTg3ZGUwLTc4MTItNGE3OS04ZjdjLWJlNDAwYTE2ZDg2MyIsIm9yZ0lkIjoiMzY1NTE1IiwidXNlcklkIjoiMzc1NjUzIiwidHlwZUlkIjoiMmY4MTdiNGMtNzA3MC00ZGJkLTk4OGItMGFhY2Q5NGJhZGE2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MDA3MzYwODQsImV4cCI6NDg1NjQ5NjA4NH0.WdqZAs3euBEvVHZz658m6xgKAN37Nf2Qk99IeqLlhI0'
-const solanaAmountUrl = 'https://solana-gateway.moralis.io/account/mainnet/EJpLyTeE8XHG9CeREeHd6pr6hNhaRnTRJx4Z5DPhEJJ6/balance'
+const solanaAmountUrl = 'https://solana-gateway.moralis.io/account/mainnet/FtoHuLxaYDZXH1ESsU3EDbZSuFa3G1WKMSLBZdru5xYL/balance' 
 const solanaPriceUrl = 'https://solana-gateway.moralis.io/token/mainnet/So11111111111111111111111111111111111111112/price'
 
 const Portfolio = () => {
