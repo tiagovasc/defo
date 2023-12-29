@@ -8,23 +8,23 @@ const solanaAuth = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjExMTg3ZGU
 const solanaAmountUrl = 'https://solana-gateway.moralis.io/account/mainnet/FtoHuLxaYDZXH1ESsU3EDbZSuFa3G1WKMSLBZdru5xYL/balance' 
 const solanaPriceUrl = 'https://solana-gateway.moralis.io/token/mainnet/So11111111111111111111111111111111111111112/price'
 
-export default function handler(req, handlerRes) {
+export default async function handler(req, handlerRes) {
   // Handle the GET request
   if (req.method === 'GET') {
     // You can perform any logic here before sending the response
     try {
-            fetch(zerionUrl, {
+            await fetch(zerionUrl, {
                 headers: {
                   accept: 'application/json',
                   authorization: zerionAuth
                 },
                 method: 'GET'
-            }).then((res) => {
-                res.json().then(
-                    (datamain) => {
+            }).then(async(res) => {
+                await res.json().then(
+                    async(datamain) => {
                         let zerionWorth = datamain.data.attributes.total.positions;
                         console.log(`zerionWorth: ${zerionWorth}`);
-                        fetch(thornodeAmountUrl, {
+                        await fetch(thornodeAmountUrl, {
                             'headers': {
                                 'accept': 'application/json, text/plain, */*',
                                 'accept-language': 'en-US,en;q=0.9',
@@ -41,35 +41,35 @@ export default function handler(req, handlerRes) {
                             'method': 'GET',
                             'mode': 'cors',
                             'credentials': 'omit'
-                        }).then((res) => res.json().then((data) => {
+                        }).then(async (res) => res.json().then(async (data) => {
                             const runAmount = data.result[0].amount / 100000000
                             console.log(`runAmount: ${runAmount}`)
 
-                            fetch(thornodePriceUrl, {
+                            await fetch(thornodePriceUrl, {
                                 method: 'GET'
-                            }).then((res) => res.json().then((info) => {
+                            }).then(async(res) => res.json().then(async(info) => {
                                 let thorPrice = Number(info.runePriceUSD);
                                 let thorWorth = (runAmount * thorPrice);
                                 console.log(`thorPrice: ${thorPrice}`)
                                 console.log(`thorWorth: ${thorWorth}`)
 
-                                fetch(solanaAmountUrl, {
+                                await fetch(solanaAmountUrl, {
                                     method:'GET',
                                     headers: {
                                         accept: 'application/json',
                                         'x-api-key': solanaAuth
                                     }
-                                }).then((res) => res.json().then((data) => {
+                                }).then(async(res) => res.json().then(async(data) => {
                                     let solanaAmount = Number(data.solana)
                                     console.log(`solanaAmount: ${solanaAmount}`)
 
-                                    fetch(solanaPriceUrl, {
+                                    await fetch(solanaPriceUrl, {
                                         method: 'GET',
                                         headers: {
                                             accept: 'application/json',
                                             'x-api-key': solanaAuth 
                                         }
-                                    }).then((res) => res.json().then((data) => {
+                                    }).then(async(res) => res.json().then((data) => {
                                         let solanaPrice = Number(data.usdPrice)                                                                                        
                                         let solanaWorth = solanaAmount * solanaPrice
                                         console.log(`solanaPrice: ${solanaPrice}`)
