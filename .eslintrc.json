@@ -3,7 +3,6 @@
   "extends": "next",  
   "rules": {
     "@typescript-eslint/no-unused-vars": "off",
-    "unused-imports/no-unused-imports": "error"
     "@next/next/no-img-element": "off",
     "react-hooks/rules-of-hooks": "off",
     "react-hooks/exhaustive-deps": "off"
