@@ -1,0 +1,28 @@
+@import '@fontsource/poppins/300.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+body {
+  background-color: #1f1d2b !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+#__next {
+  height: 100%;
+}
