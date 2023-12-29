@@ -32,74 +32,108 @@ const Portfolio: NextPage = () => {
     const formatVaultAmount = (value: number) => `$${Intl.NumberFormat().format(Math.round(value))}`;
 
     useEffect(() => {
-        fetch(zerionUrl, {
-            headers: {
-              accept: 'application/json',
-              authorization: zerionAuth
-            },
-            method: 'GET'
-        }).then((res) => {
-            res.json().then(
-                (datamain) => {
-                    let zerionWorth = datamain.data.attributes.total.positions;
-                    console.log(`zerionWorth: ${zerionWorth}`);
-                    fetch(thornodeAmountUrl, {
-                        'headers': {
-                            'accept': 'application/json, text/plain, */*',
-                            'accept-language': 'en-US,en;q=0.9',
-                            'sec-ch-ua': '"Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"',
-                            'sec-ch-ua-mobile': '?1',
-                            'sec-ch-ua-platform': '"Android"',
-                            'sec-fetch-dest': 'empty',
-                            'sec-fetch-mode': 'cors',
-                            'sec-fetch-site': 'cross-site'
-                        },
-                        'referrer': 'https://thorchain.net/',
-                        'referrerPolicy': 'strict-origin-when-cross-origin',
-                        'body': null,
-                        'method': 'GET',
-                        'mode': 'cors',
-                        'credentials': 'omit'
-                    }).then((res) => res.json().then((data) => {
-                        const runAmount = data.result[0].amount / 100000000
-                        console.log(`runAmount: ${runAmount}`)
+        const seshValueWorth = getVaultWorthSession()
 
-                        fetch(thornodePriceUrl, {
-                            method: 'GET'
-                        }).then((res) => res.json().then((info) => {
-                            let thorPrice = Number(info.runePriceUSD);
-                            let thorWorth = (runAmount * thorPrice);
-                            console.log(`thorPrice: ${thorPrice}`)
-                            console.log(`thorWorth: ${thorWorth}`)
+        if(seshValueWorth) setVaultWorth(seshValueWorth)
+        else fetchVaultWorth()
 
-                            fetch(solanaAmountUrl, {
-                                method:'GET',
-                                headers: {
-                                    accept: 'application/json',
-                                    'x-api-key': solanaAuth
-                                }
-                            }).then((res) => res.json().then((data) => {
-                                let solanaAmount = Number(data.solana)
-                                console.log(`solanaAmount: ${solanaAmount}`)
+        function fetchVaultWorth() {
+            fetch(zerionUrl, {
+                headers: {
+                  accept: 'application/json',
+                  authorization: zerionAuth
+                },
+                method: 'GET'
+            }).then((res) => {
+                res.json().then(
+                    (datamain) => {
+                        let zerionWorth = datamain.data.attributes.total.positions;
+                        console.log(`zerionWorth: ${zerionWorth}`);
+                        fetch(thornodeAmountUrl, {
+                            'headers': {
+                                'accept': 'application/json, text/plain, */*',
+                                'accept-language': 'en-US,en;q=0.9',
+                                'sec-ch-ua': '"Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"',
+                                'sec-ch-ua-mobile': '?1',
+                                'sec-ch-ua-platform': '"Android"',
+                                'sec-fetch-dest': 'empty',
+                                'sec-fetch-mode': 'cors',
+                                'sec-fetch-site': 'cross-site'
+                            },
+                            'referrer': 'https://thorchain.net/',
+                            'referrerPolicy': 'strict-origin-when-cross-origin',
+                            'body': null,
+                            'method': 'GET',
+                            'mode': 'cors',
+                            'credentials': 'omit'
+                        }).then((res) => res.json().then((data) => {
+                            const runAmount = data.result[0].amount / 100000000
+                            console.log(`runAmount: ${runAmount}`)
 
-                                fetch(solanaPriceUrl, {
-                                    method: 'GET',
+                            fetch(thornodePriceUrl, {
+                                method: 'GET'
+                            }).then((res) => res.json().then((info) => {
+                                let thorPrice = Number(info.runePriceUSD);
+                                let thorWorth = (runAmount * thorPrice);
+                                console.log(`thorPrice: ${thorPrice}`)
+                                console.log(`thorWorth: ${thorWorth}`)
+
+                                fetch(solanaAmountUrl, {
+                                    method:'GET',
                                     headers: {
                                         accept: 'application/json',
-                                        'x-api-key': solanaAuth 
+                                        'x-api-key': solanaAuth
                                     }
                                 }).then((res) => res.json().then((data) => {
-                                    let solanaPrice = Number(data.usdPrice)                                                                                        
-                                    let solanaWorth = solanaAmount * solanaPrice
-                                    console.log(`solanaPrice: ${solanaPrice}`)
-                                    console.log(`solanaWorth: ${solanaWorth}`)
-                                    setVaultWorth(zerionWorth + thorWorth + solanaWorth)
+                                    let solanaAmount = Number(data.solana)
+                                    console.log(`solanaAmount: ${solanaAmount}`)
+
+                                    fetch(solanaPriceUrl, {
+                                        method: 'GET',
+                                        headers: {
+                                            accept: 'application/json',
+                                            'x-api-key': solanaAuth 
+                                        }
+                                    }).then((res) => res.json().then((data) => {
+                                        let solanaPrice = Number(data.usdPrice)                                                                                        
+                                        let solanaWorth = solanaAmount * solanaPrice
+                                        console.log(`solanaPrice: ${solanaPrice}`)
+                                        console.log(`solanaWorth: ${solanaWorth}`)
+
+                                        let freshVaultWorth = zerionWorth + thorWorth + solanaWorth
+                                        console.log(`Fresh Vault Worth: ${freshVaultWorth}`)
+                                        saveVaultWorthSession(freshVaultWorth)
+                                        setVaultWorth(freshVaultWorth)
+                                    }))
                                 }))
-                            }))
+                            }));
                         }));
-                    }));
-                })
-        });
+                    })
+            });
+        }
+
+        function getVaultWorthSession() {
+            const tmp = sessionStorage.getItem('vault-worth')
+            if(tmp) {
+                const parsedTmp = JSON.parse(tmp)
+                const { timestamp, value } = parsedTmp
+
+                const validityMinutes = 30
+                const validityMs = validityMinutes * 60 * 1000
+                const isNotExpired = Date.now() - timestamp < validityMs 
+          
+                if(isNotExpired) console.log(`Cached Value Worth: ${value}`)
+                return isNotExpired ? value : undefined
+            }
+            return undefined
+        }
+
+        function saveVaultWorthSession(value) {
+            sessionStorage.setItem('vault-worth', JSON.stringify({
+                timestamp: Date.now(),
+                value: value
+            }))
+        }
     }, []);
 
     return (
