@@ -5,11 +5,8 @@ import {
     Grid,
     Typography
 } from '@mui/material';
-import {NextPage} from 'next/types';
 import {useEffect, useState} from 'react';
 import SimpleFooter from 'components/SimpleFooter';
-import {StargateClient} from '@cosmjs/stargate';
-import {Tendermint34Client} from '@cosmjs/tendermint-rpc';
 
 const nftsBurned = 12 
 const nftsAllocationIncrease = 4
@@ -24,7 +21,7 @@ const solanaAuth = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjExMTg3ZGU
 const solanaAmountUrl = 'https://solana-gateway.moralis.io/account/mainnet/EJpLyTeE8XHG9CeREeHd6pr6hNhaRnTRJx4Z5DPhEJJ6/balance'
 const solanaPriceUrl = 'https://solana-gateway.moralis.io/token/mainnet/So11111111111111111111111111111111111111112/price'
 
-const Portfolio: NextPage = () => {
+const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1
