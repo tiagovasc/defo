@@ -25,15 +25,14 @@ const Portfolio = () => {
         else fetchVaultWorth()
 
         function fetchVaultWorth() {
-            fetch('/api/value-worth', { 
+            fetch('/api/vault-worth', { 
                 method: 'GET' 
             }).then((res) => {
                 res.json().then((data) => {
-                    const { value } = data
-                    if(typeof value === 'number') {
-                        console.log(`Fresh Value Worth: ${value}`)
-                        saveVaultWorthSession(value)
-                        setVaultWorth(value)
+                    if(typeof data?.vaultWorth === 'number') {
+                        console.log(data)
+                        saveVaultWorthSession(data.vaultWorth)
+                        setVaultWorth(data.vaultWorth)
                     }
                 })
             })

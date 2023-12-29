@@ -75,9 +75,11 @@ export default async function handler(req, handlerRes) {
                                         console.log(`solanaPrice: ${solanaPrice}`)
                                         console.log(`solanaWorth: ${solanaWorth}`)
 
-                                        let freshVaultWorth = zerionWorth + thorWorth + solanaWorth
-                                        console.log(`Fresh Vault Worth: ${freshVaultWorth}`)
-                                        handlerRes.status(200).json({ value: freshVaultWorth })
+                                        let vaultWorth = zerionWorth + thorWorth + solanaWorth
+                                        console.log(`Fresh Vault Worth: ${vaultWorth}`)
+                                        handlerRes.status(200).json({ 
+                                            vaultWorth, zerionWorth, runAmount, thorPrice, thorWorth, solanaAmount, solanaPrice, solanaWorth
+                                        })
                                     }))
                                 }))
                             }));
