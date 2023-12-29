@@ -31,6 +31,7 @@ const Portfolio = () => {
                 res.json().then((data) => {
                     const { value } = data
                     if(typeof value === 'number') {
+                        console.log(`Fresh Value Worth: ${value}`)
                         saveVaultWorthSession(value)
                         setVaultWorth(value)
                     }
