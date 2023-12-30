@@ -11,6 +11,8 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 12 
 const nftsAllocationIncrease = 4
 
+const cacheTimeoutInMinutes = 30
+
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
 
@@ -44,7 +46,7 @@ const Portfolio = () => {
                 const parsedTmp = JSON.parse(tmp)
                 const { timestamp, value } = parsedTmp
 
-                const validityMinutes = 30
+                const validityMinutes = cacheTimeoutInMinutes
                 const validityMs = validityMinutes * 60 * 1000
                 const isNotExpired = Date.now() - timestamp < validityMs 
           
