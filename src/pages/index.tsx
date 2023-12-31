@@ -8,8 +8,8 @@ import {
 import {useEffect, useState} from 'react';
 import SimpleFooter from 'components/SimpleFooter';
 
-const nftsBurned = 12 
-const nftsAllocationIncrease = 4
+const nftsBurned = 20 
+const nftsAllocationIncrease = 4.01
 
 const cacheTimeoutInMinutes = 30
 
