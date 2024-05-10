@@ -1,4 +1,4 @@
-const zerionUrl = 'https://api.zerion.io/v1/wallets/0xf99d8717c3c2bb5a4959fab7f152eddee56580e2/portfolio?currency=usd'
+const zerionUrl = 'https://api.zerion.io/v1/wallets/0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0/portfolio?currency=usd'
 const zerionAuth = 'Basic emtfZGV2X2E4NmQ4MzVmMWNmNDRlMmVhMTc5MWYyZTNjZjI0NmE4OnprX2Rldl9hODZkODM1ZjFjZjQ0ZTJlYTE3OTFmMmUzY2YyNDZhOA=='
 
 const thornodeAmountUrl = 'https://thornode.ninerealms.com/bank/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n'
