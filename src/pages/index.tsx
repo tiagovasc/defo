@@ -11,7 +11,7 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 38
 const nftsAllocationIncrease = 11.76
 
-const cacheTimeoutInMinutes = 30
+const cacheTimeoutInMinutes = 1
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
