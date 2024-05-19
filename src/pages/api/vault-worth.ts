@@ -3,7 +3,6 @@ declare module 'pulsar_sdk_js';
 import { PulsarSDK, ChainKeys } from 'pulsar_sdk_js';
 
 const chains = [ChainKeys.ETHEREUM, ChainKeys.ARBITRUM];
-const responses_list: any[] = [];
 const wallet_addr = '0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZWFtX2lkIjoiNjY0MjAwYzQ3YmU0MGJkMjhhMTJkNzE2Iiwia2V5X2dlbmVyYXRlZF9hdCI6MTcxNTYwMTYyMC45OTgwNzgzfQ.-ZqUbth4UylmACODsG6CT2lHR074f73XTFXvhnThtHw';
 const sdk = new PulsarSDK(API_KEY);
@@ -27,7 +26,7 @@ interface TokenInfo {
   usd_value: number;
 }
 
-async function getWalletBalances(chain: string): Promise<void> {
+async function getWalletBalances(chain: string, responses_list: any[]): Promise<void> {
   const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
   for await (const balance of balances) {
     responses_list.push(balance);
@@ -35,9 +34,10 @@ async function getWalletBalances(chain: string): Promise<void> {
 }
 
 async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
-  const responses_list: any[] = [];
+  const responses_list: any[] = []; 
+
   for (const chain of chains) {
-    await getWalletBalances(chain);
+    await getWalletBalances(chain, responses_list);
   }
 
   const tokens_info: { [key: string]: TokenInfo } = {};
