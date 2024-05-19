@@ -1,3 +1,96 @@
+import { PulsarSDK, ChainKeys } from 'pulsar_sdk_js';
+
+const chains = [ChainKeys.ETHEREUM, ChainKeys.ARBITRUM];
+const responses_list: any[] = [];
+const wallet_addr = '0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0';
+const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZWFtX2lkIjoiNjY0MjAwYzQ3YmU0MGJkMjhhMTJkNzE2Iiwia2V5X2dlbmVyYXRlZF9hdCI6MTcxNTYwMTYyMC45OTgwNzgzfQ.-ZqUbth4UylmACODsG6CT2lHR074f73XTFXvhnThtHw';
+const sdk = new PulsarSDK(API_KEY);
+
+async function getWalletBalances(chain: string): Promise<void> {
+  const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
+  for await (const balance of balances) {
+    responses_list.push(balance);
+  }
+}
+
+async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
+  for (const chain of chains) {
+    await getWalletBalances(chain);
+  }
+
+  // Processing the response list
+  const tokens_info: { [key: string]: TokenInfo } = {};
+
+  responses_list.forEach(response => {
+    // Process stats directly
+    if (response.stats) {
+      response.stats.forEach((token: Balance) => {
+        const usd_value = parseFloat(token.usd_value);
+        if (usd_value > 1000) {
+          const denom = token.token.denom;
+          const name = token.token.name;
+          const platform = token.token.chain_properties.chain;
+          if (!tokens_info[denom]) {
+            tokens_info[denom] = { name: name, platforms: new Set<string>(), usd_value: 0 };
+          }
+          tokens_info[denom].platforms.add(platform);
+          tokens_info[denom].usd_value += usd_value;
+        }
+      });
+    }
+
+    // Process balances directly
+    if (response.balances) {
+      response.balances.forEach((balance: Balance) => {
+        const usd_value = parseFloat(balance.usd_value);
+        if (usd_value > 1000) {
+          const denom = balance.token.denom;
+          const name = balance.token.name;
+          const platform = balance.token.chain_properties.chain;
+          if (!tokens_info[denom]) {
+            tokens_info[denom] = { name: name, platforms: new Set<string>(), usd_value: 0 };
+          }
+          tokens_info[denom].platforms.add(platform);
+          tokens_info[denom].usd_value += usd_value;
+        }
+      });
+    }
+
+    // Process integrations for nested token information
+    if (response.stats) {
+      response.stats.forEach((integration: { balances: Balance[] }) => {
+        if (integration.balances) {
+          integration.balances.forEach((balance: Balance) => {
+            const usd_value = parseFloat(balance.usd_value);
+            if (usd_value > 1000) {
+              const denom = balance.token.denom;
+              const name = balance.token.name;
+              const platform = balance.token.chain_properties.chain;
+              if (!tokens_info[denom]) {
+                tokens_info[denom] = { name: name, platforms: new Set<string>(), usd_value: 0 };
+              }
+              tokens_info[denom].platforms.add(platform);
+              tokens_info[denom].usd_value += usd_value;
+            }
+          });
+        }
+      });
+    }
+  });
+
+  return tokens_info;
+}
+
+function sumTokenValues(tokens_info: { [key: string]: TokenInfo }): number {
+  let totalValue = 0;
+
+  Object.values(tokens_info).forEach(info => {
+    totalValue += info.usd_value;
+  });
+
+  return totalValue;
+}
+
 const zerionUrl = 'https://api.zerion.io/v1/wallets/0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0/portfolio?currency=usd'
 const zerionAuth = 'Basic emtfZGV2X2E4NmQ4MzVmMWNmNDRlMmVhMTc5MWYyZTNjZjI0NmE4OnprX2Rldl9hODZkODM1ZjFjZjQ0ZTJlYTE3OTFmMmUzY2YyNDZhOA=='
 
@@ -8,7 +101,7 @@ const solanaAuth = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjExMTg3ZGU
 const solanaAmountUrl = 'https://solana-gateway.moralis.io/account/mainnet/FtoHuLxaYDZXH1ESsU3EDbZSuFa3G1WKMSLBZdru5xYL/balance' 
 const solanaPriceUrl = 'https://solana-gateway.moralis.io/token/mainnet/So11111111111111111111111111111111111111112/price'
 
-export default async function handler(req, handlerRes) {
+export default async function handler(req: any, handlerRes: any) {
   // Handle the GET request
   if (req.method === 'GET') {
     // You can perform any logic here before sending the response
@@ -69,16 +162,21 @@ export default async function handler(req, handlerRes) {
                                             accept: 'application/json',
                                             'x-api-key': solanaAuth 
                                         }
-                                    }).then(async(res) => res.json().then((data) => {
+                                    }).then(async(res) => res.json().then(async(data) => {
                                         let solanaPrice = Number(data.usdPrice)                                                                                        
                                         let solanaWorth = solanaAmount * solanaPrice
                                         console.log(`solanaPrice: ${solanaPrice}`)
                                         console.log(`solanaWorth: ${solanaWorth}`)
 
-                                        let vaultWorth = zerionWorth + thorWorth + solanaWorth
+                                        // Fetching and summing balances from PulsarSDK
+                                        const tokens_info = await fetchAllBalances();
+                                        const pulsarWorth = sumTokenValues(tokens_info);
+                                        console.log(`pulsarWorth: ${pulsarWorth}`);
+
+                                        let vaultWorth = zerionWorth + thorWorth + solanaWorth + pulsarWorth;
                                         console.log(`Fresh Vault Worth: ${vaultWorth}`)
                                         handlerRes.status(200).json({ 
-                                            vaultWorth, zerionWorth, runAmount, thorPrice, thorWorth, solanaAmount, solanaPrice, solanaWorth
+                                            vaultWorth, zerionWorth, runAmount, thorPrice, thorWorth, solanaAmount, solanaPrice, solanaWorth, pulsarWorth
                                         })
                                     }))
                                 }))
