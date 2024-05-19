@@ -94,7 +94,7 @@ const Portfolio = () => {
 
                         {/* Render token details */}
                         {tokenDetails.map((token, index) => (
-                            <Grid container key={index} spacing={0} sx={{ mb: 1 }}>
+                            <Grid container key={index} spacing={0} sx={{ mb: 0 }}> {/* Set the margin-bottom to 0 */}
                                 <Grid item xs={6}>
                                     <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
                                         {token.name} ({token.ticker}):
