@@ -20,7 +20,7 @@ const Portfolio = () => {
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
     const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
     const formatVaultAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value))}`;
-    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { minimumFractionDigits: 3 }).format(value)}`;
+    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(value)}`;
 
     useEffect(() => {
         const seshValueWorth = getVaultWorthSession();
