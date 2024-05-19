@@ -35,6 +35,7 @@ async function getWalletBalances(chain: string): Promise<void> {
 }
 
 async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
+  const responses_list: any[] = [];
   for (const chain of chains) {
     await getWalletBalances(chain);
   }
