@@ -6,6 +6,25 @@ const wallet_addr = '0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZWFtX2lkIjoiNjY0MjAwYzQ3YmU0MGJkMjhhMTJkNzE2Iiwia2V5X2dlbmVyYXRlZF9hdCI6MTcxNTYwMTYyMC45OTgwNzgzfQ.-ZqUbth4UylmACODsG6CT2lHR074f73XTFXvhnThtHw';
 const sdk = new PulsarSDK(API_KEY);
 
+interface Token {
+  denom: string;
+  name: string;
+  chain_properties: {
+    chain: string;
+  };
+}
+
+interface Balance {
+  usd_value: string;
+  token: Token;
+}
+
+interface TokenInfo {
+  name: string;
+  platforms: Set<string>;
+  usd_value: number;
+}
+
 async function getWalletBalances(chain: string): Promise<void> {
   const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
   for await (const balance of balances) {
@@ -18,11 +37,9 @@ async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
     await getWalletBalances(chain);
   }
 
-  // Processing the response list
   const tokens_info: { [key: string]: TokenInfo } = {};
 
   responses_list.forEach(response => {
-    // Process stats directly
     if (response.stats) {
       response.stats.forEach((token: Balance) => {
         const usd_value = parseFloat(token.usd_value);
@@ -39,7 +56,6 @@ async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
       });
     }
 
-    // Process balances directly
     if (response.balances) {
       response.balances.forEach((balance: Balance) => {
         const usd_value = parseFloat(balance.usd_value);
@@ -56,7 +72,6 @@ async function fetchAllBalances(): Promise<{ [key: string]: TokenInfo }> {
       });
     }
 
-    // Process integrations for nested token information
     if (response.stats) {
       response.stats.forEach((integration: { balances: Balance[] }) => {
         if (integration.balances) {
