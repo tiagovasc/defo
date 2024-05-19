@@ -1,3 +1,5 @@
+declare module 'pulsar_sdk_js';
+
 import { PulsarSDK, ChainKeys } from 'pulsar_sdk_js';
 
 const chains = [ChainKeys.ETHEREUM, ChainKeys.ARBITRUM];
