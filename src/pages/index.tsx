@@ -18,8 +18,9 @@ const Portfolio = () => {
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
-    const formatNftAmount = (value: number) => `$${Intl.NumberFormat().format(Math.round(value + (value * nftAmountMultiplier)))}`;
-    const formatVaultAmount = (value: number) => `$${Intl.NumberFormat().format(Math.round(value))}`;
+    const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
+    const formatVaultAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value))}`;
+    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { minimumFractionDigits: 3 }).format(value)}`;
 
     useEffect(() => {
         const seshValueWorth = getVaultWorthSession();
@@ -102,7 +103,7 @@ const Portfolio = () => {
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Typography sx={{ textAlign: 'left' }}>
-                                        ${token.value}
+                                        {formatTokenValue(token.value)}
                                     </Typography>
                                 </Grid>
                             </Grid>
