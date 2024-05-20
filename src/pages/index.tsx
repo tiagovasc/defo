@@ -16,7 +16,7 @@ const cacheTimeoutInMinutes = 1;
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true); // New state to track loading
+    const [isLoading, setIsLoading] = useState<boolean>(true); 
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
     const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
@@ -84,7 +84,7 @@ const Portfolio = () => {
                         DEFO
                     </Typography>
                     <Grid container textAlign="center" width={'100%'} spacing={0}
-                          sx={{color: 'white', mt: 5, mb: 5}}>
+                        sx={{color: 'white', mt: 5, mb: 5}}>
                         <Grid item xs={6}>
                             <Typography variant="h4"
                                         sx={{textAlign: 'right', marginRight: '30px', marginBottom: '30px'}}>Vault
@@ -97,8 +97,9 @@ const Portfolio = () => {
                         </Grid>
 
                         
-                        <Grid container spacing={0} sx={{ mb: 2 }}> 
-                            {isLoading ? (
+                        <Grid container spacing={0} sx={{ mb: 4 }}> 
+                            {tokenDetails.length === 0 && isLoading ? (
+                                
                                 <Grid container spacing={0} sx={{ mb: 0 }}>
                                     <Grid item xs={6}>
                                         <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
@@ -121,7 +122,7 @@ const Portfolio = () => {
                                         </Grid>
                                         <Grid item xs={6}>
                                             <Typography sx={{ textAlign: 'left' }}>
-                                                {formatTokenValue(token.value)}
+                                                {isLoading ? <CircularProgress size={20}/> : formatTokenValue(token.value)}
                                             </Typography>
                                         </Grid>
                                     </Grid>
