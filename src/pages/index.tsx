@@ -20,7 +20,7 @@ const Portfolio = () => {
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
     const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
     const formatVaultAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value))}`;
-    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(value)}`;
+    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)}`;
 
     useEffect(() => {
         const seshValueWorth = getVaultWorthSession();
@@ -93,21 +93,23 @@ const Portfolio = () => {
                                 <CircularProgress size={30}/>}</Typography>
                         </Grid>
 
-                        {/* Render token details */}
-                        {tokenDetails.map((token, index) => (
-                            <Grid container key={index} spacing={0} sx={{ mb: 0 }}> {/* Set the margin-bottom to 0 */}
-                                <Grid item xs={6}>
-                                    <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                        {token.name} ({token.ticker}):
-                                    </Typography>
+                        
+                        <Grid container spacing={0} sx={{ mb: 2 }}> 
+                            {tokenDetails.map((token, index) => (
+                                <Grid container key={index} spacing={0} sx={{ mb: 0 }}> 
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                            {token.name} ({token.ticker}):
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'left' }}>
+                                            {formatTokenValue(token.value)}
+                                        </Typography>
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <Typography sx={{ textAlign: 'left' }}>
-                                        {formatTokenValue(token.value)}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        ))}
+                            ))}
+                        </Grid>
 
                         <Grid item xs={6}>
                             <Typography
