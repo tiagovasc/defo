@@ -16,6 +16,7 @@ const cacheTimeoutInMinutes = 1;
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true); // New state to track loading
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
     const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
@@ -28,6 +29,7 @@ const Portfolio = () => {
         if (seshValueWorth) {
             setVaultWorth(seshValueWorth.vaultWorth);
             setTokenDetails(seshValueWorth.tokenDetails);
+            setIsLoading(false); 
         } else {
             fetchVaultWorth();
         }
@@ -42,6 +44,7 @@ const Portfolio = () => {
                         saveVaultWorthSession(data.vaultWorth, data.tokenDetails);
                         setVaultWorth(data.vaultWorth);
                         setTokenDetails(data.tokenDetails);
+                        setIsLoading(false); 
                     }
                 });
             });
@@ -95,20 +98,35 @@ const Portfolio = () => {
 
                         
                         <Grid container spacing={0} sx={{ mb: 2 }}> 
-                            {tokenDetails.map((token, index) => (
-                                <Grid container key={index} spacing={0} sx={{ mb: 0 }}> 
+                            {isLoading ? (
+                                <Grid container spacing={0} sx={{ mb: 0 }}>
                                     <Grid item xs={6}>
                                         <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                            {token.name} ({token.ticker}):
+                                            <CircularProgress size={20}/>
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <Typography sx={{ textAlign: 'left' }}>
-                                            {formatTokenValue(token.value)}
+                                            <CircularProgress size={20}/>
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                            ))}
+                            ) : (
+                                tokenDetails.map((token, index) => (
+                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                                {token.name} ({token.ticker}):
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'left' }}>
+                                                {formatTokenValue(token.value)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                ))
+                            )}
                         </Grid>
 
                         <Grid item xs={6}>
