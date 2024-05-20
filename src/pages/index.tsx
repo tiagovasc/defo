@@ -84,7 +84,7 @@ const Portfolio = () => {
                         DEFO
                     </Typography>
                     <Grid container textAlign="center" width={'100%'} spacing={0}
-                        sx={{color: 'white', mt: 5, mb: 5}}>
+                          sx={{color: 'white', mt: 5, mb: 5}}>
                         <Grid item xs={6}>
                             <Typography variant="h4"
                                         sx={{textAlign: 'right', marginRight: '30px', marginBottom: '30px'}}>Vault
@@ -97,21 +97,23 @@ const Portfolio = () => {
                         </Grid>
 
                         
-                        <Grid container spacing={0} sx={{ mb: 4 }}> 
+                        <Grid container spacing={0} sx={{ mb: 2 }}> 
                             {tokenDetails.length === 0 && isLoading ? (
                                 
-                                <Grid container spacing={0} sx={{ mb: 0 }}>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                            <CircularProgress size={20}/>
-                                        </Typography>
+                                ['Loading...'].map((token, index) => (
+                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                                {token}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'left' }}>
+                                                <CircularProgress size={20}/>
+                                            </Typography>
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'left' }}>
-                                            <CircularProgress size={20}/>
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
+                                ))
                             ) : (
                                 tokenDetails.map((token, index) => (
                                     <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
@@ -122,7 +124,7 @@ const Portfolio = () => {
                                         </Grid>
                                         <Grid item xs={6}>
                                             <Typography sx={{ textAlign: 'left' }}>
-                                                {isLoading ? <CircularProgress size={20}/> : formatTokenValue(token.value)}
+                                                {formatTokenValue(token.value)}
                                             </Typography>
                                         </Grid>
                                     </Grid>
