@@ -11,12 +11,12 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 38;
 const nftsAllocationIncrease = 11.76;
 
-const cacheTimeoutInMinutes = 1;
+const cacheTimeoutInHours = 1;
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true); 
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
     const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
@@ -24,12 +24,11 @@ const Portfolio = () => {
     const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)}`;
 
     useEffect(() => {
-        const seshValueWorth = getVaultWorthSession();
-
-        if (seshValueWorth) {
-            setVaultWorth(seshValueWorth.vaultWorth);
-            setTokenDetails(seshValueWorth.tokenDetails);
-            setIsLoading(false); 
+        const cachedData = getCachedVaultWorth();
+        if (cachedData) {
+            setVaultWorth(cachedData.vaultWorth);
+            setTokenDetails(cachedData.tokenDetails);
+            setIsLoading(false);
         } else {
             fetchVaultWorth();
         }
@@ -41,37 +40,38 @@ const Portfolio = () => {
                 res.json().then((data) => {
                     if (typeof data?.vaultWorth === 'number' && Array.isArray(data?.tokenDetails)) {
                         console.log(data);
-                        saveVaultWorthSession(data.vaultWorth, data.tokenDetails);
+                        cacheVaultWorth(data.vaultWorth, data.tokenDetails);
                         setVaultWorth(data.vaultWorth);
                         setTokenDetails(data.tokenDetails);
-                        setIsLoading(false); 
+                        setIsLoading(false);
                     }
                 });
             });
         }
 
-        function getVaultWorthSession() {
-            const tmp = sessionStorage.getItem('vault-worth');
-            if (tmp) {
-                const parsedTmp = JSON.parse(tmp);
-                const { timestamp, vaultWorth, tokenDetails } = parsedTmp;
-
-                const validityMinutes = cacheTimeoutInMinutes;
-                const validityMs = validityMinutes * 60 * 1000;
-                const isNotExpired = Date.now() - timestamp < validityMs;
-
-                if (isNotExpired) console.log(`Cached Value Worth: ${vaultWorth}`);
-                return isNotExpired ? { vaultWorth, tokenDetails } : undefined;
+        function getCachedVaultWorth() {
+            const cache = localStorage.getItem('vault-worth');
+            if (cache) {
+                const { timestamp, vaultWorth, tokenDetails } = JSON.parse(cache);
+                const age = (Date.now() - timestamp) / (1000 * 60 * 60); 
+                if (age < cacheTimeoutInHours) {
+                    console.log('Using cached data:', { vaultWorth, tokenDetails });
+                    return { vaultWorth, tokenDetails };
+                } else {
+                    console.log('Cache is outdated.');
+                    localStorage.removeItem('vault-worth');
+                }
             }
-            return undefined;
+            return null;
         }
 
-        function saveVaultWorthSession(vaultWorth, tokenDetails) {
-            sessionStorage.setItem('vault-worth', JSON.stringify({
+        function cacheVaultWorth(vaultWorth, tokenDetails) {
+            const cache = {
                 timestamp: Date.now(),
                 vaultWorth,
                 tokenDetails
-            }));
+            };
+            localStorage.setItem('vault-worth', JSON.stringify(cache));
         }
     }, []);
 
@@ -96,24 +96,22 @@ const Portfolio = () => {
                                 <CircularProgress size={30}/>}</Typography>
                         </Grid>
 
-                        
-                        <Grid container spacing={0} sx={{ mb: 2 }}> 
+                        {/* Container for token details with a bottom margin */}
+                        <Grid container spacing={0} sx={{ mb: 2 }}>
                             {tokenDetails.length === 0 && isLoading ? (
                                 
-                                ['Loading...'].map((token, index) => (
-                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
-                                        <Grid item xs={6}>
-                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                                {token}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <Typography sx={{ textAlign: 'left' }}>
-                                                <CircularProgress size={20}/>
-                                            </Typography>
-                                        </Grid>
+                                <Grid container spacing={0} sx={{ mb: 0 }}>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                            <CircularProgress size={20}/>
+                                        </Typography>
                                     </Grid>
-                                ))
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'left' }}>
+                                            <CircularProgress size={20}/>
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
                             ) : (
                                 tokenDetails.map((token, index) => (
                                     <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
