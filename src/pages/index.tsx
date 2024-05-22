@@ -11,7 +11,7 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 38;
 const nftsAllocationIncrease = 11.76;
 
-const cacheTimeoutInHours = 1;
+const cacheTimeoutInHours = 1; 
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
@@ -100,18 +100,20 @@ const Portfolio = () => {
                         <Grid container spacing={0} sx={{ mb: 2 }}>
                             {tokenDetails.length === 0 && isLoading ? (
                                 
-                                <Grid container spacing={0} sx={{ mb: 0 }}>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                            <CircularProgress size={20}/>
-                                        </Typography>
+                                ['Loading...'].map((token, index) => (
+                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                                {token}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'left' }}>
+                                                <CircularProgress size={20}/>
+                                            </Typography>
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'left' }}>
-                                            <CircularProgress size={20}/>
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
+                                ))
                             ) : (
                                 tokenDetails.map((token, index) => (
                                     <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
@@ -122,7 +124,7 @@ const Portfolio = () => {
                                         </Grid>
                                         <Grid item xs={6}>
                                             <Typography sx={{ textAlign: 'left' }}>
-                                                {formatTokenValue(token.value)}
+                                                {isLoading ? <CircularProgress size={20}/> : formatTokenValue(token.value)}
                                             </Typography>
                                         </Grid>
                                     </Grid>
