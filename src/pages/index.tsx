@@ -16,7 +16,6 @@ const cacheTimeoutInHours = 1;
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
-    const [thornodeValue, setThornodeValue] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
@@ -32,30 +31,30 @@ const Portfolio = () => {
             setIsLoading(false);
         } else {
             fetchVaultWorth();
-            fetchThornodeData();
         }
 
         function fetchVaultWorth() {
-            fetch('/api/vault-worth', {
-                method: 'GET'
-            }).then((res) => {
-                res.json().then((data) => {
-                    if (typeof data?.vaultWorth === 'number' && Array.isArray(data?.tokenDetails)) {
-                        console.log(data);
-                        cacheVaultWorth(data.vaultWorth, data.tokenDetails);
-                        setVaultWorth(data.vaultWorth);
-                        setTokenDetails(data.tokenDetails);
+            Promise.all([fetch('/api/vault-worth', { method: 'GET' }).then(res => res.json()), fetchThornodeData()])
+                .then(([vaultData, thornodeData]) => {
+                    if (typeof vaultData?.vaultWorth === 'number' && Array.isArray(vaultData?.tokenDetails)) {
+                        const thornodeValue = thornodeData.reduce((sum, token) => sum + token.value, 0);
+                        const totalVaultWorth = vaultData.vaultWorth + thornodeValue;
+                        const allTokens = [...vaultData.tokenDetails, ...thornodeData];
+                        cacheVaultWorth(totalVaultWorth, allTokens);
+                        setVaultWorth(totalVaultWorth);
+                        setTokenDetails(allTokens);
                         setIsLoading(false);
                     }
                 });
-            });
         }
 
         async function fetchThornodeData() {
             const thornodeValues = await calculateThornodeValuesInUSD();
-            if (thornodeValues.length > 0) {
-                setThornodeValue(thornodeValues[0].usdValue);
-            }
+            return thornodeValues.map(value => ({
+                name: 'RUNEUSDT',
+                ticker: 'RUNEUSDT',
+                value: value.usdValue
+            }));
         }
 
         function getCachedVaultWorth() {
@@ -167,37 +166,6 @@ const Portfolio = () => {
                                         </Grid>
                                     </Grid>
                                 ))
-                            )}
-                        </Grid>
-
-                        {/* Thornode token details */}
-                        <Grid container spacing={0} sx={{ mb: 4 }}>
-                            {thornodeValue === null && isLoading ? (
-                                <Grid container spacing={0} sx={{ mb: 0 }}>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                            RUNEUSDT:
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'left' }}>
-                                            <CircularProgress size={20}/>
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            ) : (
-                                <Grid container spacing={0} sx={{ mb: 0 }}>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
-                                            RUNEUSDT:
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography sx={{ textAlign: 'left' }}>
-                                            {formatTokenValue(thornodeValue)}
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
                             )}
                         </Grid>
 
