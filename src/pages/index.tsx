@@ -16,6 +16,7 @@ const cacheTimeoutInHours = 1;
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
     const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
+    const [thornodeValue, setThornodeValue] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
@@ -31,6 +32,7 @@ const Portfolio = () => {
             setIsLoading(false);
         } else {
             fetchVaultWorth();
+            fetchThornodeData();
         }
 
         function fetchVaultWorth() {
@@ -49,11 +51,18 @@ const Portfolio = () => {
             });
         }
 
+        async function fetchThornodeData() {
+            const thornodeValues = await calculateThornodeValuesInUSD();
+            if (thornodeValues.length > 0) {
+                setThornodeValue(thornodeValues[0].usdValue);
+            }
+        }
+
         function getCachedVaultWorth() {
             const cache = localStorage.getItem('vault-worth');
             if (cache) {
                 const { timestamp, vaultWorth, tokenDetails } = JSON.parse(cache);
-                const age = (Date.now() - timestamp) / (1000 * 60 * 60); 
+                const age = (Date.now() - timestamp) / (1000 * 60 * 60); // Convert age to hours
                 if (age < cacheTimeoutInHours) {
                     console.log('Using cached data:', { vaultWorth, tokenDetails });
                     return { vaultWorth, tokenDetails };
@@ -74,6 +83,35 @@ const Portfolio = () => {
             localStorage.setItem('vault-worth', JSON.stringify(cache));
         }
     }, []);
+
+    async function fetchThornodeBalances() {
+        const response = await fetch('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
+        const data = await response.json();
+        return data.balances; 
+    }
+
+    async function fetchRunePrice() {
+        const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=RUNEUSDT');
+        const data = await response.json();
+        return parseFloat(data.price); 
+    }
+
+    async function calculateThornodeValuesInUSD() {
+        const balances = await fetchThornodeBalances();
+        const runePrice = await fetchRunePrice();
+        
+        const usdValues = balances.map(balance => {
+            const amount = parseFloat(balance.amount) / 1000000; 
+            const usdValue = amount * runePrice;
+            return {
+                denom: balance.denom,
+                amount,
+                usdValue
+            };
+        });
+        
+        return usdValues; 
+    }
 
     return (
         <Box height={'100%'} minHeight={'100vh'} display='flex' flexDirection='column' justifyContent='center' alignItems='center'>
@@ -129,6 +167,37 @@ const Portfolio = () => {
                                         </Grid>
                                     </Grid>
                                 ))
+                            )}
+                        </Grid>
+
+                        {/* Thornode token details */}
+                        <Grid container spacing={0} sx={{ mb: 4 }}>
+                            {thornodeValue === null && isLoading ? (
+                                <Grid container spacing={0} sx={{ mb: 0 }}>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                            RUNEUSDT:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'left' }}>
+                                            <CircularProgress size={20}/>
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                            ) : (
+                                <Grid container spacing={0} sx={{ mb: 0 }}>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                            RUNEUSDT:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography sx={{ textAlign: 'left' }}>
+                                            {formatTokenValue(thornodeValue)}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
                             )}
                         </Grid>
 
