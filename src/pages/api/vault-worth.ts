@@ -118,7 +118,7 @@ async function fetchThornodeBalances() {
 async function fetchRunePrice() {
   const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=RUNEUSDT');
   const data = await response.json();
-  console.log(`Rune Price from Binance: ${data.price}`);
+  console.log(`Rune Price from Binance:`, data);
   return parseFloat(data.price); 
 }
 
