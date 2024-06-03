@@ -109,19 +109,63 @@ function sumTokenValues(tokens_info: { [key: string]: TokenInfo }): number {
   return totalValue;
 }
 
+async function fetchThornodeBalances() {
+  const response = await fetch('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
+  const data = await response.json();
+  return data.balances; 
+}
+
+async function fetchRunePrice() {
+  const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=RUNEUSDT');
+  const data = await response.json();
+  return parseFloat(data.price); 
+}
+
+async function calculateThornodeValuesInUSD() {
+  const balances = await fetchThornodeBalances();
+  const runePrice = await fetchRunePrice();
+  
+  const usdValues = balances.map(balance => {
+    const amount = parseFloat(balance.amount); 
+    const usdValue = amount * runePrice;
+    return {
+      denom: balance.denom,
+      amount,
+      usdValue
+    };
+  });
+  
+  return usdValues; 
+}
+
 export default async function handler(req: any, handlerRes: any) {
   if (req.method === 'GET') {
     try {
-      const tokens_info = await fetchAllBalances();
-      const pulsarWorth = sumTokenValues(tokens_info);
-      console.log(`pulsarWorth: ${pulsarWorth}`);
+      const [pulsarBalances, thornodeValues] = await Promise.all([fetchAllBalances(), calculateThornodeValuesInUSD()]);
 
-      const tokenDetails = Object.keys(tokens_info).map(denom => {
-        const info = tokens_info[denom];
-        return { name: info.name, ticker: denom, value: Math.floor(info.usd_value) };
+      const thornodeTokens = thornodeValues.map(value => ({
+        name: 'Rune',
+        ticker: 'RUNEUSDT',
+        value: value.usdValue
+      }));
+
+      const totalThornodeValue = thornodeTokens.reduce((sum, token) => sum + token.value, 0);
+
+      const allTokens = { ...pulsarBalances, ...thornodeTokens.reduce((acc, token) => {
+        acc[token.ticker] = {
+          name: token.name,
+          platforms: new Set<string>(),
+          usd_value: token.value
+        };
+        return acc;
+      }, {})};
+
+      const totalValue = sumTokenValues(pulsarBalances) + totalThornodeValue;
+
+      handlerRes.status(200).json({
+        vaultWorth: totalValue,
+        tokenDetails: Object.values(allTokens)
       });
-
-      handlerRes.status(200).json({ vaultWorth: pulsarWorth, tokenDetails });
     } catch (err) {
       handlerRes.status(400).json({ message: 'Something went wrong.' });
     }

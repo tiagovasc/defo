@@ -11,7 +11,7 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 38;
 const nftsAllocationIncrease = 11.76;
 
-const cacheTimeoutInHours = 1; 
+const cacheTimeoutInHours = 1; // Timeout duration in hours
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
@@ -51,7 +51,7 @@ const Portfolio = () => {
         async function fetchThornodeData() {
             const thornodeValues = await calculateThornodeValuesInUSD();
             return thornodeValues.map(value => ({
-                name: 'RUNEUSDT',
+                name: 'Rune',
                 ticker: 'RUNEUSDT',
                 value: value.usdValue
             }));
@@ -110,7 +110,6 @@ const Portfolio = () => {
         });
         
         return usdValues; 
-    }
 
     return (
         <Box height={'100%'} minHeight={'100vh'} display='flex' flexDirection='column' justifyContent='center' alignItems='center'>
@@ -121,7 +120,7 @@ const Portfolio = () => {
                         DEFO
                     </Typography>
                     <Grid container textAlign="center" width={'100%'} spacing={0}
-                          sx={{color: 'white', mt: 5, mb: 5}}>
+                        sx={{color: 'white', mt: 5, mb: 5}}>
                         <Grid item xs={6}>
                             <Typography variant="h4"
                                         sx={{textAlign: 'right', marginRight: '30px', marginBottom: '30px'}}>Vault
