@@ -11,7 +11,7 @@ import SimpleFooter from 'components/SimpleFooter';
 const nftsBurned = 38;
 const nftsAllocationIncrease = 11.76;
 
-const cacheTimeoutInHours = 1; // Timeout duration in hours
+const cacheTimeoutInHours = 1; 
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
@@ -100,7 +100,7 @@ const Portfolio = () => {
         const runePrice = await fetchRunePrice();
         
         const usdValues = balances.map(balance => {
-            const amount = parseFloat(balance.amount) / 1000000; 
+            const amount = parseFloat(balance.amount); 
             const usdValue = amount * runePrice;
             return {
                 denom: balance.denom,
@@ -110,6 +110,7 @@ const Portfolio = () => {
         });
         
         return usdValues; 
+    }
 
     return (
         <Box height={'100%'} minHeight={'100vh'} display='flex' flexDirection='column' justifyContent='center' alignItems='center'>
@@ -120,7 +121,7 @@ const Portfolio = () => {
                         DEFO
                     </Typography>
                     <Grid container textAlign="center" width={'100%'} spacing={0}
-                        sx={{color: 'white', mt: 5, mb: 5}}>
+                          sx={{color: 'white', mt: 5, mb: 5}}>
                         <Grid item xs={6}>
                             <Typography variant="h4"
                                         sx={{textAlign: 'right', marginRight: '30px', marginBottom: '30px'}}>Vault
@@ -236,7 +237,7 @@ const Portfolio = () => {
             </Container>
             <SimpleFooter/>
         </Box>
-    )
-}
+    );
+};
 
 export default Portfolio;
