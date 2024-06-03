@@ -126,7 +126,7 @@ async function calculateThornodeValuesInUSD() {
   const runePrice = await fetchRunePrice();
   
   const usdValues = balances.map(balance => {
-    const amount = parseFloat(balance.amount); 
+    const amount = parseFloat(balance.amount) / 1e8; 
     const usdValue = amount * runePrice;
     return {
       denom: balance.denom,
