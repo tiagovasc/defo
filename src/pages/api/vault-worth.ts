@@ -112,15 +112,15 @@ function sumTokenValues(tokens_info: { [key: string]: TokenInfo }): number {
 async function fetchThornodeBalances() {
   const response = await fetch('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
   const data = await response.json();
-  console.log('Thornode Balances:', data.balances); // Log dos saldos da Thornode
-  return data.balances; // Retorna uma lista de saldos
+  console.log('Thornode Balances:', data.balances); 
+  return data.balances; 
 }
 
 async function fetchRunePrice() {
   const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
   const data = await response.json();
-  console.log('Rune Price from CoinGecko:', data.thorchain.usd); // Log para verificar o preço do RUNE
-  return parseFloat(data.thorchain.usd); // Retorna o preço do RUNE em USD
+  console.log('Rune Price from CoinGecko:', data.thorchain.usd); 
+  return parseFloat(data.thorchain.usd); 
 }
 
 async function calculateThornodeValuesInUSD() {
@@ -128,10 +128,10 @@ async function calculateThornodeValuesInUSD() {
   const runePrice = await fetchRunePrice();
   
   const usdValues = balances.map(balance => {
-    const amount = parseFloat(balance.amount) / 1e8; // Convertendo de unidades menores para unidades inteiras de RUNE
-    console.log(`Amount in RUNE: ${amount}`); // Log para verificar a conversão
+    const amount = parseFloat(balance.amount) / 1e8; 
+    console.log(`Amount in RUNE: ${amount}`); 
     const usdValue = amount * runePrice;
-    console.log(`USD Value: ${usdValue}`); // Log para verificar o cálculo do valor em USD
+    console.log(`USD Value: ${usdValue}`); 
     return {
       denom: balance.denom,
       amount,
@@ -139,7 +139,7 @@ async function calculateThornodeValuesInUSD() {
     };
   });
   
-  return usdValues; // Retorna uma lista de objetos com denom, amount e usdValue
+  return usdValues; 
 }
 
 export default async function handler(req: any, handlerRes: any) {
@@ -167,8 +167,7 @@ export default async function handler(req: any, handlerRes: any) {
         return acc;
       }, {})};
 
-      const totalValue = sumTokenValues(pulsarBalances) + totalThornodeValue;
-
+      const totalValue = sumTokenValues(allTokens); 
       console.log('Total Vault Worth:', totalValue);
 
       handlerRes.status(200).json({
