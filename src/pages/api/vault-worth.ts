@@ -1,6 +1,5 @@
-declare module 'pulsar_sdk_js';
-
 import { PulsarSDK, ChainKeys } from 'pulsar_sdk_js';
+import axios from 'axios';
 
 const chains = [ChainKeys.ETHEREUM, ChainKeys.ARBITRUM];
 const wallet_addr = '0x1bdb97985913d699b0fbd1aacf96d1f855d9e1d0';
@@ -27,9 +26,13 @@ interface TokenInfo {
 }
 
 async function getWalletBalances(chain: string, responses_list: any[]): Promise<void> {
-  const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
-  for await (const balance of balances) {
-    responses_list.push(balance);
+  try {
+    const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
+    for await (const balance of balances) {
+      responses_list.push(balance);
+    }
+  } catch (error) {
+    console.error(`Failed to fetch balances for chain ${chain}:`, error);
   }
 }
 
@@ -110,76 +113,66 @@ function sumTokenValues(tokens_info: { [key: string]: TokenInfo }): number {
 }
 
 async function fetchThornodeBalances() {
-  const response = await fetch('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
-  const data = await response.json();
-  console.log('Thornode Balances:', data.balances); 
-  return data.balances; 
+  const response = await axios.get('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
+  return response.data.balances;
 }
 
 async function fetchRunePrice() {
-  const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
-  const data = await response.json();
-  console.log('Rune Price from CoinGecko:', data.thorchain.usd); 
-  return parseFloat(data.thorchain.usd); 
+  const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
+  return parseFloat(response.data.thorchain.usd); 
 }
 
 async function calculateThornodeValuesInUSD() {
   const balances = await fetchThornodeBalances();
   const runePrice = await fetchRunePrice();
-  
+
   const usdValues = balances.map(balance => {
     const amount = parseFloat(balance.amount) / 1e8; 
-    console.log(`Amount in RUNE: ${amount}`); 
     const usdValue = amount * runePrice;
-    console.log(`USD Value: ${usdValue}`); 
     return {
       denom: balance.denom,
       amount,
       usdValue
     };
   });
-  
-  return usdValues; 
+
+  return usdValues;
 }
 
 export default async function handler(req: any, handlerRes: any) {
+
   if (req.method === 'GET') {
     try {
-      const [pulsarBalances, thornodeValues] = await Promise.all([fetchAllBalances(), calculateThornodeValuesInUSD()]);
+      const tokens_info = await fetchAllBalances();
+      const pulsarWorth = sumTokenValues(tokens_info);
+      console.log('Pulsar Balances:', tokens_info);
+      console.log('Total Pulsar Worth:', pulsarWorth);
 
-      console.log('Pulsar Balances:', pulsarBalances);
+      const thornodeValues = await calculateThornodeValuesInUSD();
       console.log('Thornode Values:', thornodeValues);
+      const thornodeWorth = thornodeValues.reduce((sum, token) => sum + token.usdValue, 0);
 
-      const thornodeTokens = thornodeValues.map(value => ({
-        name: 'Rune',
-        ticker: 'RUNEUSDT',
-        value: value.usdValue
-      }));
+      const vaultWorth = pulsarWorth + thornodeWorth;
+      console.log('Total Vault Worth:', vaultWorth);
 
-      const totalThornodeValue = thornodeTokens.reduce((sum, token) => sum + token.value, 0);
-
-      const allTokens = { ...pulsarBalances, ...thornodeTokens.reduce((acc, token) => {
-        acc[token.ticker] = {
-          name: token.name,
-          platforms: new Set<string>(),
-          usd_value: token.value
-        };
-        return acc;
-      }, {})};
-
-      const totalValue = sumTokenValues(allTokens); 
-
-      console.log('Total Vault Worth:', totalValue);
-
-      handlerRes.status(200).json({
-        vaultWorth: totalValue,
-        tokenDetails: Object.values(allTokens)
+      handlerRes.status(200).json({ 
+        vaultWorth,
+        tokenDetails: Object.keys(tokens_info).map(key => ({
+          name: tokens_info[key].name,
+          ticker: key,
+          value: tokens_info[key].usd_value
+        })).concat(thornodeValues.map(token => ({
+          name: 'Rune',
+          ticker: 'RUNEUSDT',
+          value: token.usdValue
+        })))
       });
     } catch (err) {
-      console.error('Error in handler:', err);
-      handlerRes.status(400).json({ message: 'Something went wrong.' });
+      console.error('Failed to fetch data:', err);
+      handlerRes.status(500).json({ message: 'Internal Server Error' });
     }
   } else {
+    // Handle other HTTP methods
     handlerRes.status(405).json({ error: 'Method Not Allowed' });
   }
 }
