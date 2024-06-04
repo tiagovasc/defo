@@ -168,6 +168,7 @@ export default async function handler(req: any, handlerRes: any) {
       }, {})};
 
       const totalValue = sumTokenValues(allTokens); 
+
       console.log('Total Vault Worth:', totalValue);
 
       handlerRes.status(200).json({

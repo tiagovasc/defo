@@ -90,9 +90,9 @@ const Portfolio = () => {
     }
 
     async function fetchRunePrice() {
-        const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=RUNEUSDT');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
         const data = await response.json();
-        return parseFloat(data.price); 
+        return parseFloat(data.thorchain.usd); 
     }
 
     async function calculateThornodeValuesInUSD() {
@@ -100,7 +100,7 @@ const Portfolio = () => {
         const runePrice = await fetchRunePrice();
         
         const usdValues = balances.map(balance => {
-            const amount = parseFloat(balance.amount); 
+            const amount = parseFloat(balance.amount) / 1e8; 
             const usdValue = amount * runePrice;
             return {
                 denom: balance.denom,
@@ -121,7 +121,7 @@ const Portfolio = () => {
                         DEFO
                     </Typography>
                     <Grid container textAlign="center" width={'100%'} spacing={0}
-                          sx={{color: 'white', mt: 5, mb: 5}}>
+                        sx={{color: 'white', mt: 5, mb: 5}}>
                         <Grid item xs={6}>
                             <Typography variant="h4"
                                         sx={{textAlign: 'right', marginRight: '30px', marginBottom: '30px'}}>Vault
@@ -136,7 +136,6 @@ const Portfolio = () => {
                         {/* Container for token details with a bottom margin */}
                         <Grid container spacing={0} sx={{ mb: 2 }}>
                             {tokenDetails.length === 0 && isLoading ? (
-                                
                                 ['Loading...'].map((token, index) => (
                                     <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
                                         <Grid item xs={6}>
