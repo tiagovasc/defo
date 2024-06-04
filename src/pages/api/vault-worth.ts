@@ -1,3 +1,5 @@
+declare module 'pulsar_sdk_js';
+
 import { PulsarSDK, ChainKeys } from 'pulsar_sdk_js';
 import axios from 'axios';
 
@@ -26,13 +28,9 @@ interface TokenInfo {
 }
 
 async function getWalletBalances(chain: string, responses_list: any[]): Promise<void> {
-  try {
-    const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
-    for await (const balance of balances) {
-      responses_list.push(balance);
-    }
-  } catch (error) {
-    console.error(`Failed to fetch balances for chain ${chain}:`, error);
+  const balances = sdk.balances.getWalletBalances(wallet_addr, chain);
+  for await (const balance of balances) {
+    responses_list.push(balance);
   }
 }
 
@@ -119,7 +117,7 @@ async function fetchThornodeBalances() {
 
 async function fetchRunePrice() {
   const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
-  return parseFloat(response.data.thorchain.usd); 
+  return parseFloat(response.data.thorchain.usd);
 }
 
 async function calculateThornodeValuesInUSD() {
@@ -127,7 +125,7 @@ async function calculateThornodeValuesInUSD() {
   const runePrice = await fetchRunePrice();
 
   const usdValues = balances.map(balance => {
-    const amount = parseFloat(balance.amount) / 1e8; 
+    const amount = parseFloat(balance.amount) / 1e8;
     const usdValue = amount * runePrice;
     return {
       denom: balance.denom,
@@ -140,39 +138,37 @@ async function calculateThornodeValuesInUSD() {
 }
 
 export default async function handler(req: any, handlerRes: any) {
-
   if (req.method === 'GET') {
     try {
       const tokens_info = await fetchAllBalances();
       const pulsarWorth = sumTokenValues(tokens_info);
-      console.log('Pulsar Balances:', tokens_info);
-      console.log('Total Pulsar Worth:', pulsarWorth);
+      console.log(`pulsarWorth: ${pulsarWorth}`);
+
+      const tokenDetails = Object.keys(tokens_info).map(denom => {
+        const info = tokens_info[denom];
+        return { name: info.name, ticker: denom, value: Math.floor(info.usd_value) };
+      });
 
       const thornodeValues = await calculateThornodeValuesInUSD();
-      console.log('Thornode Values:', thornodeValues);
       const thornodeWorth = thornodeValues.reduce((sum, token) => sum + token.usdValue, 0);
 
-      const vaultWorth = pulsarWorth + thornodeWorth;
-      console.log('Total Vault Worth:', vaultWorth);
+      const totalVaultWorth = pulsarWorth + thornodeWorth;
+
+      const thornodeTokenDetails = thornodeValues.map(token => ({
+        name: 'Rune',
+        ticker: 'RUNEUSDT',
+        value: Math.floor(token.usdValue)
+      }));
 
       handlerRes.status(200).json({ 
-        vaultWorth,
-        tokenDetails: Object.keys(tokens_info).map(key => ({
-          name: tokens_info[key].name,
-          ticker: key,
-          value: tokens_info[key].usd_value
-        })).concat(thornodeValues.map(token => ({
-          name: 'Rune',
-          ticker: 'RUNEUSDT',
-          value: token.usdValue
-        })))
+        vaultWorth: totalVaultWorth, 
+        tokenDetails: [...tokenDetails, ...thornodeTokenDetails]
       });
     } catch (err) {
       console.error('Failed to fetch data:', err);
       handlerRes.status(500).json({ message: 'Internal Server Error' });
     }
   } else {
-    // Handle other HTTP methods
     handlerRes.status(405).json({ error: 'Method Not Allowed' });
   }
 }
