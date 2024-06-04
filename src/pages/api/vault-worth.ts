@@ -116,10 +116,10 @@ async function fetchThornodeBalances() {
 }
 
 async function fetchRunePrice() {
-  const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=RUNEUSDT');
+  const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
   const data = await response.json();
-  console.log(`Rune Price from Binance:`, data);
-  return parseFloat(data.price); 
+  console.log('Rune Price from CoinGecko:', data.thorchain.usd); 
+  return parseFloat(data.thorchain.usd); 
 }
 
 async function calculateThornodeValuesInUSD() {
