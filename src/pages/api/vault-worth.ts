@@ -112,14 +112,15 @@ function sumTokenValues(tokens_info: { [key: string]: TokenInfo }): number {
 async function fetchThornodeBalances() {
   const response = await fetch('https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/thor1s65q3qky0z003f9k7gzv7scutmkr7j0qpfrd0n');
   const data = await response.json();
-  return data.balances; 
+  console.log('Thornode Balances:', data.balances); // Log dos saldos da Thornode
+  return data.balances; // Retorna uma lista de saldos
 }
 
 async function fetchRunePrice() {
   const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=thorchain&vs_currencies=usd');
   const data = await response.json();
-  console.log('Rune Price from CoinGecko:', data.thorchain.usd); 
-  return parseFloat(data.thorchain.usd); 
+  console.log('Rune Price from CoinGecko:', data.thorchain.usd); // Log para verificar o preço do RUNE
+  return parseFloat(data.thorchain.usd); // Retorna o preço do RUNE em USD
 }
 
 async function calculateThornodeValuesInUSD() {
@@ -127,24 +128,27 @@ async function calculateThornodeValuesInUSD() {
   const runePrice = await fetchRunePrice();
   
   const usdValues = balances.map(balance => {
-      const amount = parseFloat(balance.amount) / 1e8; 
-      console.log(`Amount in RUNE: ${amount}`); 
-      const usdValue = amount * runePrice;
-      console.log(`USD Value: ${usdValue}`); 
-      return {
-          denom: balance.denom,
-          amount,
-          usdValue
-      };
+    const amount = parseFloat(balance.amount) / 1e8; // Convertendo de unidades menores para unidades inteiras de RUNE
+    console.log(`Amount in RUNE: ${amount}`); // Log para verificar a conversão
+    const usdValue = amount * runePrice;
+    console.log(`USD Value: ${usdValue}`); // Log para verificar o cálculo do valor em USD
+    return {
+      denom: balance.denom,
+      amount,
+      usdValue
+    };
   });
   
-  return usdValues; 
+  return usdValues; // Retorna uma lista de objetos com denom, amount e usdValue
 }
 
 export default async function handler(req: any, handlerRes: any) {
   if (req.method === 'GET') {
     try {
       const [pulsarBalances, thornodeValues] = await Promise.all([fetchAllBalances(), calculateThornodeValuesInUSD()]);
+
+      console.log('Pulsar Balances:', pulsarBalances);
+      console.log('Thornode Values:', thornodeValues);
 
       const thornodeTokens = thornodeValues.map(value => ({
         name: 'Rune',
@@ -165,11 +169,14 @@ export default async function handler(req: any, handlerRes: any) {
 
       const totalValue = sumTokenValues(pulsarBalances) + totalThornodeValue;
 
+      console.log('Total Vault Worth:', totalValue);
+
       handlerRes.status(200).json({
         vaultWorth: totalValue,
         tokenDetails: Object.values(allTokens)
       });
     } catch (err) {
+      console.error('Error in handler:', err);
       handlerRes.status(400).json({ message: 'Something went wrong.' });
     }
   } else {
