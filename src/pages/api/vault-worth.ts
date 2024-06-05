@@ -147,7 +147,7 @@ export default async function handler(req: any, handlerRes: any) {
       const tokenDetails = Object.keys(tokens_info).map(denom => {
         const info = tokens_info[denom];
         let name = info.name;
-        if (denom == 'steth') {
+        if (denom === 'steth') {
           name = 'Lido Staked Ether (STETH, MORPHEUS)';
         }
         return { name, ticker: denom, value: Math.floor(info.usd_value) };
