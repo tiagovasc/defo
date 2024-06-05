@@ -5,62 +5,71 @@ import {
     Grid,
     Typography
 } from '@mui/material';
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import SimpleFooter from 'components/SimpleFooter';
 
-const nftsBurned = 38
-const nftsAllocationIncrease = 11.76
+const nftsBurned = 38;
+const nftsAllocationIncrease = 11.76;
 
-const cacheTimeoutInMinutes = 1
+const cacheTimeoutInHours = 1; 
 
 const Portfolio = () => {
     const [vaultWorth, setVaultWorth] = useState<number | null>(null);
+    const [tokenDetails, setTokenDetails] = useState<{ name: string; ticker: string; value: number }[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1
-    const formatNftAmount = (value: number) => `$${Intl.NumberFormat().format(Math.round(value + (value * nftAmountMultiplier)))}`;
-    const formatVaultAmount = (value: number) => `$${Intl.NumberFormat().format(Math.round(value))}`;
+    const nftAmountMultiplier = nftsAllocationIncrease ? (nftsAllocationIncrease / 100) : 1;
+    const formatNftAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value + (value * nftAmountMultiplier)))}`;
+    const formatVaultAmount = (value: number) => `$${Intl.NumberFormat('en-US').format(Math.round(value))}`;
+    const formatTokenValue = (value: number) => `$${Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)}`;
 
     useEffect(() => {
-        const seshValueWorth = getVaultWorthSession()
-
-        if(seshValueWorth) setVaultWorth(seshValueWorth)
-        else fetchVaultWorth()
+        const cachedData = getCachedVaultWorth();
+        if (cachedData) {
+            setVaultWorth(cachedData.vaultWorth);
+            setTokenDetails(cachedData.tokenDetails);
+            setIsLoading(false);
+        } else {
+            fetchVaultWorth();
+        }
 
         function fetchVaultWorth() {
-            fetch('/api/vault-worth', { 
-                method: 'GET' 
-            }).then((res) => {
-                res.json().then((data) => {
-                    if(typeof data?.vaultWorth === 'number') {
-                        console.log(data)
-                        saveVaultWorthSession(data.vaultWorth)
-                        setVaultWorth(data.vaultWorth)
+            fetch('/api/vault-worth', { method: 'GET' })
+                .then(res => res.json())
+                .then(data => {
+                    if (typeof data?.vaultWorth === 'number' && Array.isArray(data?.tokenDetails)) {
+                        cacheVaultWorth(data.vaultWorth, data.tokenDetails);
+                        setVaultWorth(data.vaultWorth);
+                        setTokenDetails(data.tokenDetails);
+                        setIsLoading(false);
                     }
                 })
-            })
+                .catch(error => console.error('Failed to fetch vault worth:', error));
         }
 
-        function getVaultWorthSession() {
-            const tmp = sessionStorage.getItem('vault-worth')
-            if(tmp) {
-                const parsedTmp = JSON.parse(tmp)
-                const { timestamp, value } = parsedTmp
-
-                const validityMinutes = cacheTimeoutInMinutes
-                const validityMs = validityMinutes * 60 * 1000
-                const isNotExpired = Date.now() - timestamp < validityMs 
-          
-                if(isNotExpired) console.log(`Cached Value Worth: ${value}`)
-                return isNotExpired ? value : undefined
+        function getCachedVaultWorth() {
+            const cache = localStorage.getItem('vault-worth');
+            if (cache) {
+                const { timestamp, vaultWorth, tokenDetails } = JSON.parse(cache);
+                const age = (Date.now() - timestamp) / (1000 * 60 * 60); // Convert age to hours
+                if (age < cacheTimeoutInHours) {
+                    console.log('Using cached data:', { vaultWorth, tokenDetails });
+                    return { vaultWorth, tokenDetails };
+                } else {
+                    console.log('Cache is outdated.');
+                    localStorage.removeItem('vault-worth');
+                }
             }
-            return undefined
+            return null;
         }
 
-        function saveVaultWorthSession(value) {
-            sessionStorage.setItem('vault-worth', JSON.stringify({
+        function cacheVaultWorth(vaultWorth, tokenDetails) {
+            const cache = {
                 timestamp: Date.now(),
-                value: value
-            }))
+                vaultWorth,
+                tokenDetails
+            };
+            localStorage.setItem('vault-worth', JSON.stringify(cache));
         }
     }, []);
 
@@ -85,6 +94,41 @@ const Portfolio = () => {
                                 <CircularProgress size={30}/>}</Typography>
                         </Grid>
 
+                        {/* Container for token details with a bottom margin */}
+                        <Grid container spacing={0} sx={{ mb: 2 }}>
+                            {tokenDetails.length === 0 && isLoading ? (
+                                
+                                ['Loading...'].map((token, index) => (
+                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                                {token}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'left' }}>
+                                                <CircularProgress size={20}/>
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                ))
+                            ) : (
+                                tokenDetails.map((token, index) => (
+                                    <Grid container key={index} spacing={0} sx={{ mb: 0 }}>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'right', marginRight: '30px', fontWeight: 600 }}>
+                                                {token.name} ({token.ticker}):
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Typography sx={{ textAlign: 'left' }}>
+                                                {isLoading ? <CircularProgress size={20}/> : formatTokenValue(token.value)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                ))
+                            )}
+                        </Grid>
 
                         <Grid item xs={6}>
                             <Typography
@@ -114,7 +158,6 @@ const Portfolio = () => {
                                 <CircularProgress size={10}/>}</Typography>
                         </Grid>
 
-
                         <Grid item xs={6}>
                             <Typography
                                 sx={{fontWeight: 600, textAlign: 'right', marginRight: '30px'}}>Ruby:</Typography>
@@ -124,7 +167,6 @@ const Portfolio = () => {
                                 sx={{textAlign: 'left'}}>{vaultWorth != null ? formatNftAmount(vaultWorth * 0.0015) :
                                 <CircularProgress size={10}/>}</Typography>
                         </Grid>
-
 
                         <Grid item xs={6}>
                             <Typography
@@ -156,7 +198,7 @@ const Portfolio = () => {
             </Container>
             <SimpleFooter/>
         </Box>
-    )
-}
+    );
+};
 
-export default Portfolio
+export default Portfolio;
