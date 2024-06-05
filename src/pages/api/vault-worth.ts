@@ -148,7 +148,7 @@ export default async function handler(req: any, handlerRes: any) {
         const info = tokens_info[denom];
         let name = info.name;
         console.log(`Processing token: ${denom}, ${name}`);
-        if (denom === 'steth') {
+        if (denom === 'STETH') {
           name = 'Lido Staked Ether (STETH, MORPHEUS)';
           console.log('Token steth found, updating name to Lido Staked Ether (STETH, MORPHEUS)');
         }
