@@ -146,7 +146,11 @@ export default async function handler(req: any, handlerRes: any) {
 
       const tokenDetails = Object.keys(tokens_info).map(denom => {
         const info = tokens_info[denom];
-        return { name: info.name, ticker: denom, value: Math.floor(info.usd_value) };
+        let name = info.name;
+        if (denom == 'steth') {
+          name = 'Lido Staked Ether (STETH, MORPHEUS)';
+        }
+        return { name, ticker: denom, value: Math.floor(info.usd_value) };
       });
 
       const thornodeValues = await calculateThornodeValuesInUSD();
