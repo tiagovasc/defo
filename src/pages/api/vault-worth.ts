@@ -149,8 +149,8 @@ export default async function handler(req: any, handlerRes: any) {
         let name = info.name;
         console.log(`Processing token: ${denom}, ${name}`);
         if (denom === 'STETH') {
-          name = 'Lido Staked Ether (STETH, MORPHEUS)';
-          console.log('Token steth found, updating name to Lido Staked Ether (STETH, MORPHEUS)');
+          name = 'Lido Staked Ether [MORPHEUS]';
+          console.log('Token steth found, updating name to Lido Staked Ether [MORPHEUS]');
         }
         return { name, ticker: denom, value: Math.floor(info.usd_value) };
       });
