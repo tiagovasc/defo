@@ -1,0 +1,55 @@
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1F1D2B 0%, #26243D 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+
+.main-title {
+    font-size: 3em; /* 1.5 times larger than .title font-size of 2em */
+    font-weight: 600;
+    margin: 30px 0;
+}
+
+.title {
+    font-size: 2em;
+    font-weight: 500;
+    margin: 20px 0;
+}
+
+.vault-worth, .nft-details, .nft-title {
+    margin: 20px 0;
+}
+
+.portfolio-details, .nft-details {
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 80%;
+}
+
+.portfolio-details th, .portfolio-details td,
+.nft-details th, .nft-details td {
+    padding: 10px;
+    text-align: center;
+    /* Remove border properties */
+    border: none;
+}
+
+.footer, .footnote {
+    color: gray;
+    margin-top: 20px;
+}
+
+.footnote {
+    margin-bottom: 10px; /* Space between footnote and NFT Allocation title */
+}
