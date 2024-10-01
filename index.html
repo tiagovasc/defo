@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DEFO</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Title -->
+        <div class="main-title">DEFO</div>
+
+        <!-- Portfolio Title -->
+        <div class="title">Portfolio</div>
+        <div class="vault-worth">Vault Worth: <span id="vaultWorth">Loading...</span></div>
+
+        <!-- Portfolio Table -->
+        <table class="portfolio-details">
+            <tr>
+                <th>Name</th>
+                <th>Ticker</th>
+                <th>Token Amount</th>
+                <th>USD Value</th>
+                <th>Sale</th>
+                <th>Details</th> <!-- New column added -->
+            </tr>
+            <!-- Table rows will be populated by JavaScript -->
+            <tbody id="portfolioTableBody"></tbody>
+        </table>
+
+        <!-- NFT Allocation Title -->
+        <div class="title">NFT Allocation</div>
+        <table class="nft-details">
+            <tr>
+                <th>NFT</th>
+                <th>Starting Floor Price</th>
+                <th>Current Floor Price</th>
+                <th>Deflationary Floor Price</th>
+            </tr>
+            <tr>
+                <td>Emerald</td>
+                <td id="emeraldStarting">Loading...</td>
+                <td id="emeraldCurrent">Loading...</td>
+                <td id="emeraldDeflationary">Loading...</td>
+            </tr>
+            <tr>
+                <td>Diamond</td>
+                <td id="diamondStarting">Loading...</td>
+                <td id="diamondCurrent">Loading...</td>
+                <td id="diamondDeflationary">Loading...</td>
+            </tr>
+            <tr>
+                <td>Ruby</td>
+                <td id="rubyStarting">Loading...</td>
+                <td id="rubyCurrent">Loading...</td>
+                <td id="rubyDeflationary">Loading...</td>
+            </tr>
+            <tr>
+                <td>Sapphire</td>
+                <td id="sapphireStarting">Loading...</td>
+                <td id="sapphireCurrent">Loading...</td>
+                <td id="sapphireDeflationary">Loading...</td>
+            </tr>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer" id="footer">Loading...</div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
